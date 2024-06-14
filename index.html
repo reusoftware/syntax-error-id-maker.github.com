@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="cool.png" type="image/x-icon">
+    <title>MigBuzz ID Maker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Acme&display=swap');
+        .ttl {
+            font-family: 'Acme', sans-serif;
+        }
+        .blinking {
+            animation: blink 1s linear infinite;
+        }
+        @keyframes blink {
+            0% { background-color: transparent; }
+            50% { background-color: hotpink; }
+            100% { background-color: transparent; }
+        }
+        body {
+            display: flex;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            flex-direction: column;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        #form-container, #ids-container, div#generator-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 10px;
+        }
+        #yourIp {
+            font-size: 12px;
+            padding-top: 25px;
+        }
+        #copyright {
+            font-size: 14px;
+            padding-top: 5px;
+            font-weight: bold;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+        }
+        label, input, #status {
+            display: block;
+            margin: 10px 0;
+            text-align: left;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        button {
+            width: 48%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        img {
+            width: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+        .image-container {
+            width: 100%;
+            height: 92px;
+            overflow: hidden;
+        }
+        .image-container img {
+            width: 100%;
+        }
+        .panel-container {
+            width: 85%;
+            border: 1px solid black;
+            text-align: center;
+            padding: 10px;
+        }
+        .tabs {
+            margin: 10px 0;
+        }
+        @media (max-width: 767px) {
+            .tabs {
+                width: 100%;
+            }
+        }
+        @media (min-width: 768px) {
+            .tabs {
+                display: inline-block;
+                width: 48%;
+            }
+        }
+        .captcha-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        input#cCode {
+            width: 48%;
+            margin: 10px 0;
+        }
+        button#refreshButton {
+            width: 48%;
+            margin: 10px 0;
+        }
+        button#createButton {
+            width: 100%;
+        }
+        .room-captcha-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        button#refreshRoomCaptchaButton {
+            width: 48%;
+            margin: 10px 0;
+        }
+        input#rCode {
+            width: 48%;
+            margin: 10px 0;
+        }
+        botipban {
+            display: flex;
+        }
+        input#isBotOnIPBanCheckBox {
+            width: 10%;
+            margin: 10 0;
+        }
+        captchacodetext#captchaCodeText {
+            display: flex;
+            align-items: center;
+        }
+        label#cCodeLabel {
+            width: 50%;
+        }
+        div#voiceListeningStatus {
+            margin-left: auto;
+            font-weight: 800;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+
+   <h1 class="ttl">MigBuzz ID Maker</h1>
+  <audio id="audio" preload="none" type="audio/wav"></audio>
+  <div class="panel-container">
+    <div class="tabs" id="generator-container">
+      <label for="idsTypeCombobox">Select IDs Type :</label>
+      <select id="idsTypeCombobox">
+        <option value="option1">RANDOM</option>
+        <option value="option2">CUSTOM</option>
+      </select>
+      <label for="targetNames">Target Names :</label>
+      <textarea id="targetNames" rows="15" placeholder="Type target names here" name="targetNames"></textarea>
+      <label for="targetMidPart">IDs Middle Part :</label>
+      <textarea id="targetMidPart" rows="15" placeholder="Type target names here" name="targetMidPart"></textarea>
+      <label id="numericComboLabel" for="numericCombo">Random IDs length :</label>
+      <select id="numericCombo"></select>
+    </div>
+    <div class="tabs" id="form-container">
+      <label for="username">Username:</label>
+      <input type="text" id="username" placeholder="Username">
+      <label for="password">Password:</label>
+      <input type="text" id="password" placeholder="Password">
+      <img id="image" src="" alt="Captcha Image">
+      <captchacodetext id="captchaCodeText">
+        <label id="cCodeLabel" for="cCode">Captcha Code:</label>
+        <div id="voiceListeningStatus">Listening...</div>
+      </captchacodetext>
+      <div class="captcha-container">
+        <input type="text" id="cCode" value="" placeholder="Register Captcha">
+        <button id="refreshButton">Refresh Captcha</button>
+      </div>
+      <div id="status">ID Status:</div>
+      <div class="button-container">
+        <button id="createButton">Register</button>
+      </div>
+      <label for="prxyCombobox">Select Proxy Type :</label>
+      <select id="prxyCombobox">
+        <option value="option1">NONE</option>
+        <option value="option2">TOR SOCKS</option>
+        <option value="option3">TOR HTTP</option>
+        <option value="option4">PUBLIC SOCKS</option>
+        <option value="option5">PUBLIC HTTP</option>
+      </select>
+      <button id="changeIpButton">Change IP</button>
+      <div id="ipInfoLabel">Your New IP Address:</div>
+    </div>
+    <div class="tabs" id="ids-container">
+      <div id="flood-option" style="display:flex">
+        <fl>
+          <input type="checkbox" id="voiceTypingCheckBox" name="voiceTypingCheckBox" value="voiceTypingCheckBox">
+          <label for="voiceTypingCheckBox">Voice Typing</label>
+        </fl>
+        <fl>
+          <input type="checkbox" id="roomFloodCheckBox" name="roomFloodCheckBox" value="roomFloodCheckBox">
+          <label for="roomFloodCheckBox">Room Flood</label>
+        </fl>
+        <fl>
+          <input type="checkbox" id="privateFloodCheckBox" name="privateFloodCheckBox" value="privateFloodCheckBox">
+          <label for="privateFloodCheckBox">Private Flood</label>
+        </fl>
+      </div>
+      <label for="privateTargets">Private Targets:</label>
+      <textarea id="privateTargets" rows="6" placeholder="Private Targets separated by New Line"></textarea>
+      <label for="rooms">Target Rooms:</label>
+      <input type="text" id="rooms" placeholder="Target room name">
+      <label for="roomCaptcha">Room Captcha:</label>
+      <div class="image-container">
+        <img id="roomCaptcha" src="" alt="Room Captcha Image">
+      </div>
+      <captchacodetext id="captchaCodeText">
+        <label id="cCodeLabel" for="cCode">Room Captcha Code:</label>
+        <div id="voiceListeningStatus">Listening...</div>
+      </captchacodetext>
+      <div class="room-captcha-container">
+        <input type="text" id="rCode" value="" placeholder="Room Captcha">
+        <button id="refreshRoomCaptchaButton">Refresh Captcha</button>
+      </div>
+      <botipban>
+        <input type="checkbox" id="isBotOnIPBanCheckBox" name="isBotOnIPBanCheckBox" value="isBotOnIPBanCheckBox">
+        <label for="isBotOnIPBanCheckBox">Is Bot on IP Ban?</label>
+      </botipban>
+      <label for="floodMsg">Flood Msgs:</label>
+      <textarea id="floodMsg" rows="14" placeholder="Flood msgs separated by #"></textarea>
+    </div>
+    <div class="tabs" id="activity-container">
+      <label id="createdIDsLabel" for="createdIDs">Created IDs:</label>
+      <textarea id="createdIDs" rows="8" placeholder="Your created Ids will appear here"></textarea>
+      <div class="button-container">
+        <button id="downloadButton" type="submit">Download</button>
+        <button id="clearButton" type="reset">Clear</button>
+      </div>
+      <label for="monitor">Activity Monitor:</label>
+      <textarea id="monitor" rows="30" placeholder="Activity will appear here" name="monitor"></textarea>
+    </div>
+  </div>
+  <div id="yourIp">Your IP Address:</div>
+  <div id="copyright">©Acme 2023</div>
+  <script type="module">
+    const numericCombo = document.getElementById('numericCombo');
+    const idsTypeCombobox = document.getElementById('idsTypeCombobox');
+    var instanceId;
+    var idm1CaptchaLink = "";
+    var idm1RoomCaptchaLink = "";
+    var idm1CaptchaCode = "";
+    var idm1RoomCaptchaCode = "";
+    var idm1CaptchaUsername = "";
+    var idm1CaptchaPassword = "";
+    const image = document.getElementById('image');
+    const roomCaptcha = document.getElementById("roomCaptcha");
+    const cCode = document.getElementById("cCode");
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+    const createdIDsTextbox = document.getElementById("createdIDs");
+    const createdIDsLabel = document.getElementById("createdIDsLabel");
+    const clearButton = document.getElementById("clearButton");
+    const downloadButton = document.getElementById("downloadButton");
+    const prxyCombobox = document.getElementById("prxyCombobox");
+    const cCodeInputBox = document.getElementById("cCode");
+    const rCodeInputBox = document.getElementById("rCode");
+    const roomsInputBox = document.getElementById("rooms");
+    const floodMsgInputBox = document.getElementById("floodMsg");
+    const createButton = document.getElementById("createButton");
+    const refreshButton = document.getElementById("refreshButton");
+    const changeIpButton = document.getElementById("changeIpButton");
+    const sseData = document.getElementById('monitor');
+    const statusLabel = document.getElementById("status");
+    const targetNames = document.getElementById('targetNames');
+    const targetMidPart = document.getElementById('targetMidPart');
+    const privateTargets = document.getElementById('privateTargets');
+    const roomFloodCheckBox = document.getElementById('roomFloodCheckBox');
+    const privateFloodCheckBox = document.getElementById('privateFloodCheckBox');
+    const isBotOnIPBanCheckBox = document.getElementById('isBotOnIPBanCheckBox');
+    const voiceTypingCheckBox = document.getElementById('voiceTypingCheckBox');
+    var voiceResultInputBox;
+    const voiceListeningStatus = document.getElementById("voiceListeningStatus");
+    const grammar = [
+      'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'clear',
+      '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'
+    ];
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      let isListening = false;
+      recognition.lang = "en-IN";
+      recognition.maxAlternatives = 1;
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.onstart = function() {
+        isListening = true;
+      };
+      recognition.onend = function() {
+        isListening = false;
+        recognition.start();
+      };
+      recognition.onaudioend = () => {
+        voiceListeningStatus.style.display = "none";
+      };
+      recognition.onaudiostart = () => {
+        voiceListeningStatus.textContent = "Listening...";
+        voiceListeningStatus.style.display = "block";
+      };
+      recognition.onresult = async function(event) {
+        voiceListeningStatus.textContent = "Finished!";
+        const last = event.results.length - 1;
+        const word = event.results[last][0].transcript;
+        const stringWithoutSpaces = word.replace(/\s/g, '');
+        if (voiceResultInputBox) {
+          if (stringWithoutSpaces != "clear") {
+            voiceResultInputBox.value += stringWithoutSpaces;
+          }
+        } else {
+          alert("Please tap on captcha input box to proceed");
+        }
+        if (stringWithoutSpaces == "clear" || stringWithoutSpaces == "delete" || stringWithoutSpaces == "deleteall") {
+          voiceResultInputBox.value = "";
+          voiceResultInputBox.focus();
+        }
+        if (stringWithoutSpaces == "reload" || stringWithoutSpaces == "refresh") {
+          if (voiceResultInputBox.id == "cCode") {
+            const link = await loadCaptcha();
+            idm1CaptchaLink = link;
+            image.src = link;
+            cCodeInputBox.value = "";
+          } else if (voiceResultInputBox.id == "rCode") {
+            const link = await loadCaptcha();
+            roomCaptcha.src = link;
+            idm1RoomCaptchaLink = link;
+            rCodeInputBox.value = "";
+          }
+        }
+        const inputEvent = new Event('input', { bubbles: true });
+        voiceResultInputBox.dispatchEvent(inputEvent);
+        voiceListeningStatus.textContent = "Listening...";
+      };
+      recognition.onnomatch = () => {
+        console.log("Speech not recognized");
+      };
+      recognition.onsoundend = (event) => {
+        console.log("Sound has stopped being received");
+      };
+      recognition.onsoundstart = () => {
+        console.log("Some sound is being received");
+      };
+      recognition.onspeechend = () => {
+        console.log("Speech has stopped being detected");
+      };
+      recognition.onspeechstart = () => {
+        console.log("Speech has been detected");
+      };
+      recognition.onerror = (event) => {
+        console.log(`Speech recognition error detected: ${event.error}`);
+      };
+      voiceTypingCheckBox.addEventListener('change', function() {
+        if (voiceTypingCheckBox.checked) {
+          recognition.start();
+        } else {
+          recognition.stop();
+        }
+      });
+    } else {
+      alert('Speech recognition is not supported in your browser.');
+    }
+    async function loadPreData() {
+      for (let i = 6; i <= 64; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.text = i;
+        numericCombo.appendChild(option);
+      }
+      createdIDsTextbox.value = localStorage.getItem('savedContent');
+      createdIDsLabel.textContent = localStorage.getItem('savedContent2');
+      roomsInputBox.textContent = localStorage.getItem('savedContent3');
+      floodMsgInputBox.textContent = localStorage.getItem('savedContent4');
+      targetNames.textContent = localStorage.getItem('targetNames');
+      targetMidPart.textContent = localStorage.getItem('targetMidPart');
+      roomsInputBox.value = localStorage.getItem('roomsInputBox');
+      privateTargets.value = localStorage.getItem('privateTargets');
+      await GenerateIDPassword();
+      await getIpAddress();
+      const registerCaptcha = await loadCaptcha();
+      image.src = registerCaptcha;
+      idm1CaptchaLink = registerCaptcha;
+    }
+    loadPreData();
+  </script>
+  <script>
+        async function GenerateIDPassword() {
+            const numericComboselectedIndex = numericCombo.selectedIndex;
+            const idsTypeComboboxselectedIndex = idsTypeCombobox.selectedIndex;
+
+            if (idsTypeComboboxselectedIndex == 0) {
+                const selectedOption = numericCombo.options[numericComboselectedIndex];
+                const selectedValue = selectedOption.value;
+
+                const generatedUsername = await generateString(parseInt(selectedValue));
+                const generatedPassword = await generateString(parseInt(selectedValue));
+
+                username.value = generatedUsername;
+                password.value = generatedPassword;
+            } else {
+                const Targetlines = targetNames.value.split('\n');
+                const TargetMidlines = targetMidPart.value.split('\n');
+
+                if (Targetlines.length > 0 && TargetMidlines.length > 0) {
+                    const rndTargetName = Targetlines[Math.floor(Math.random() * Targetlines.length)];
+                    const rndTargetMid = TargetMidlines[Math.floor(Math.random() * TargetMidlines.length)];
+
+                    const selectedOption = numericCombo.options[numericComboselectedIndex];
+                    const selectedValue = selectedOption.value;
+
+                    const generatedUsername = await generateString(parseInt(selectedValue));
+                    const generatedPassword = await generateString(parseInt(selectedValue));
+                    username.value = rndTargetName + rndTargetMid + generatedUsername;
+                    password.value = rndTargetName + rndTargetMid + generatedPassword;
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const eventSource = new EventSource('/sse');
+
+            eventSource.onmessage = async (event) => {
+                const currTime = new Date().toLocaleTimeString();
+                const jsonObject = JSON.parse(event.data);
+
+                if (typeof jsonObject === "object") {
+                    const coverted = jsonObject;
+
+                    if (coverted.handler === 'room_event') {
+                        if (coverted.type == "room_needs_captcha") {
+                            sseData.value += `${currTime}: Incorrect Captcha - ${coverted.name} \n`;
+                            roomCaptcha.src = coverted.captcha_url;
+                            idm1RoomCaptchaLink = coverted.captcha_url;
+                            rCodeInputBox.focus();
+                        }
+                        if (coverted.type == "you_joined") {
+                            sseData.value += `${currTime}: You joined - ${coverted.name} \n`;
+                            roomCaptcha.src = "";
+                        }
+                        if (coverted.type == "room_membership_required") {
+                            sseData.value += `${currTime}: Membership required - ${coverted.name} \n`;
+                            roomCaptcha.src = "";
+
+                            const audio = document.getElementById('audio');
+                            audio.src = "denied.mp3"
+                            //audio.play();
+
+                            var playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.then(_ => {
+                                    video.pause();
+                                }).catch(error => { });
+                            }
+                        }
+                        if (coverted.type == "room_needs_password") {
+                            sseData.value += `${currTime}: Password protected - ${coverted.name} \n`;
+                            roomCaptcha.src = "";
+
+                            const audio = document.getElementById('audio');
+                            audio.src = "denied.mp3"
+                            //audio.play();
+
+                            var playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.then(_ => {
+                                    video.pause();
+                                }).catch(error => { });
+                            }
+                        }
+                        if (coverted.type == "your_role_changed" && coverted.new_role == "outcast") {
+                            if (isBotOnIPBanCheckBox.checked) {
+                                const selectedIndex = prxyCombobox.selectedIndex;
+
+                                if (selectedIndex == 0) {
+                                    await chngPrxy("socks");
+                                    prxyCombobox.selectedIndex = 2;
+                                } else if (selectedIndex == 1) {
+                                    await chngPrxy("http");
+                                } else if (selectedIndex == 2) {
+                                    await chngPrxy("socks");
+                                }
+                            }
+
+                            sseData.value += `${currTime}: You got banned by - ${coverted.actor} \n`;
+                            roomCaptcha.src = "";
+
+                            const audio = document.getElementById('audio');
+                            audio.src = "ohno.mp3"
+                            //audio.play();
+
+                            var playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.then(_ => {
+                                    video.pause();
+                                }).catch(error => { });
+                            }
+                        }
+                        if (coverted.type == "your_role_changed" && coverted.new_role == "kicked") {
+                            sseData.value += `${currTime}: You got kicked by - ${coverted.actor} \n`;
+                            roomCaptcha.src = "";
+                            const audio = document.getElementById('audio');
+                            audio.src = "ohno.mp3"
+                            //audio.play();
+
+                            var playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.then(_ => {
+                                    video.pause();
+                                }).catch(error => { });
+                            }
+                        }
+                        if (coverted.type == "room_unauthorized") {
+                            sseData.value += `${currTime}: Your authorization has been expired - ${coverted.name} \n`;
+                            roomCaptcha.src = "";
+                            const audio = document.getElementById('audio');
+                            audio.src = "denied.mp3"
+                            //audio.play();
+
+                            var playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.then(_ => {
+                                    video.pause();
+                                }).catch(error => { });
+                            }
+                        }
+                    }
+                }
+            };
+
+            const savedContent = localStorage.getItem('savedContent');
+            const savedContent2 = localStorage.getItem('savedContent2');
+
+            if (savedContent !== null) {
+                createdIDsTextbox.value = savedContent;
+                createdIDsLabel.textContent = savedContent2;
+            }
+
+            const roomsInputBoxContent = localStorage.getItem('savedContent3');
+            const floodMsgInputBoxContent = localStorage.getItem('savedContent4');
+
+            if (roomsInputBoxContent !== null) {
+                roomsInputBox.value = roomsInputBoxContent;
+            }
+
+            if (floodMsgInputBoxContent !== null) {
+                floodMsgInputBox.value = floodMsgInputBoxContent;
+            }
+
+            const targetNamesContent = localStorage.getItem('targetNames');
+            const targetMidPartContent = localStorage.getItem('targetMidPart');
+            const roomsInputBoxContentLocal = localStorage.getItem('roomsInputBox');
+            const privateTargetsContent = localStorage.getItem('privateTargets');
+
+            if (targetNamesContent !== null) {
+                targetNames.value = targetNamesContent;
+            }
+
+            if (targetMidPartContent !== null) {
+                targetMidPart.value = targetMidPartContent;
+            }
+
+            if (roomsInputBoxContentLocal !== null) {
+                roomsInputBox.value = roomsInputBoxContentLocal;
+            }
+
+            if (privateTargetsContent !== null) {
+                privateTargets.value = privateTargetsContent;
+            }
+        });
+
+        async function generateString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = ' ';
+            const charactersLength = characters.length;
+            let counter = 0;
+            while (counter < length) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                counter += 1;
+            }
+            return result;
+        }
+
+       async function loadCaptcha() {
+    try {
+        const response = await fetch('/captcha'); // Assuming '/captcha' is the correct endpoint to fetch the captcha image
+        const captchaData = await response.json(); // Assuming the response contains the captcha data as JSON
+        return captchaData.url; // Assuming the JSON response has a 'url' field containing the captcha image URL
+    } catch (error) {
+        console.error('Error loading captcha:', error);
+        return '/default_captcha.jpg'; // Provide a default captcha URL or handle the error appropriately
+    }
+}
+
+
+        async function create(user, pass, cpUrl, cCode, prxyType, prxy) {
+            const regData = {
+                username: user,
+                password: pass,
+                cpUrl: cpUrl,
+                cCode: cCode,
+                prxyType: prxyType,
+                prxy: prxy
+            }
+
+            return fetch('/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(regData)
+            })
+                .then(async response => response.json())
+                .then(async data => {
+                    console.log(data);
+                    instanceId = data.instanceId;
+                    idm1RoomCaptchaLink = data.captchaUrl;
+
+                    if (data.success == true) {
+                        if (roomFloodCheckBox.checked) {
+                            roomCaptcha.src = data.captchaUrl;
+                            rCodeInputBox.focus();
+                        }
+                        statusLabel.innerHTML = 'ID Status : <span style="color: green;">Created Successfully</span>';
+                        const audio = document.getElementById('audio');
+                        audio.src = "success.wav"
+                        //audio.play();
+
+                        var playPromise = audio.play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(_ => {
+                                video.pause();
+                            })
+                                .catch(error => { });
+                        }
+
+                        createdIDsTextbox.value += data.credential + "\n";
+                        const text = createdIDsTextbox.value;
+                        const lines = text.split('\n');
+                        createdIDsLabel.textContent = `Created IDs: ${lines.length - 1}`;
+
+                        const createdIDsTextboxContent = createdIDsTextbox.value;
+                        localStorage.setItem('savedContent', createdIDsTextboxContent);
+                        const createdIDsLabelContent = createdIDsLabel.textContent;
+                        localStorage.setItem('savedContent2', createdIDsLabelContent);
+
+                        if (privateFloodCheckBox.checked) {
+                            const pvTargets = privateTargets.value.split('\n');
+                            await sendRoomCaptcha("", "", "", "", instanceId, "private", pvTargets);
+                        }
+                        createdIDsTextbox.scrollTop = createdIDsTextbox.scrollHeight;
+
+                    } else {
+                        const audio = document.getElementById('audio');
+                        audio.src = "error.wav"
+                        // audio.play();
+                        var playPromise = audio.play();
+
+                        if (playPromise !== undefined) {
+                            playPromise.then(_ => {
+                                video.pause();
+                            })
+                                .catch(error => { });
+                        }
+
+                        var message = '<span style="color: red;">' + data.message + '</span>';
+                        statusLabel.innerHTML = 'ID Status : ' + message;
+
+                        if (data.message == "limit_reached") {
+                            const selectedIndex = prxyCombobox.selectedIndex;
+
+                            if (selectedIndex == 0) {
+
+                                prxyCombobox.selectedIndex = 1;
+                                changeIpButton.click();
+                            } else if (selectedIndex == 1) {
+                                prxyCombobox.selectedIndex = 2;
+                                changeIpButton.click();
+                            } else if (selectedIndex == 2) {
+                                prxyCombobox.selectedIndex = 1;
+                                changeIpButton.click();
+
+                            }
+
+
+                        }
+
+                    }
+                })
+                .catch(async error => {
+                    console.error('Request error:', error);
+                    // refreshButton.click();
+                });
+        }
+
+        async function sendRoomCaptcha(curl, ccode, rooms, floodmsgs, instance, floodtype, pvtargets) {
+            const regData = {
+                rooms: rooms,
+                curl: curl,
+                ccode: ccode,
+                floodmsgs: floodmsgs,
+                instance: instance,
+                floodtype: floodtype,
+                pvtargets: pvtargets
+            }
+            return fetch('/sendroomcaptcha', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(regData)
+            })
+                .then(async response => response.json())
+                .then(async data => {
+                    console.log(data);
+                })
+                .catch(async error => {
+                    console.error('Request error:', error);
+                });
+        }
+
+        async function chngPrxy(prxyType) {
+            const regData = {
+                proxyType: prxyType
+            }
+
+            return fetch('/changeip', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(regData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    const ipInfoLabel = document.getElementById("ipInfoLabel");
+                    if (data.success == true) {
+
+                        var currTime = new Date().toLocaleTimeString();
+                        var message = '<span style="color: black;">' + data.ip + '</span>';
+                        ipInfoLabel.innerHTML = 'Your New IP Address : ' + message;
+                        sseData.value += `${currTime}: Your IP has been changed\n`;
+
+                    } else {
+                        var message = '<span style="color: red;">' + data.message + '</span>';
+                        ipInfoLabel.innerHTML = 'Your New IP Address : ' + message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Request error:', error);
+                });
+        }
+
+        document.getElementById('refreshButton').addEventListener('click', async function () {
+            const link = await loadCaptcha();
+            image.src = link;
+            idm1CaptchaLink = link;
+        });
+
+        document.getElementById('refreshRoomCaptchaButton').addEventListener('click', async function () {
+            const link = await loadCaptcha();
+            roomCaptcha.src = link;
+            idm1RoomCaptchaLink = link;
+        });
+
+        document.getElementById('createButton').addEventListener('click', async function () {
+            const cUrl = idm1CaptchaLink;
+
+            const comboBox = document.getElementById('prxyCombobox');
+            const selectedIndex = comboBox.selectedIndex;
+
+            if (selectedIndex !== -1) {
+                if (comboBox.selectedIndex == 0) {
+                    await create(username.value, password.value, cUrl, cCode.value);
+                } else if (comboBox.selectedIndex == 1) {
+                    await create(username.value, password.value, cUrl, cCode.value, "socks");
+                } else if (comboBox.selectedIndex == 2) {
+                    await create(username.value, password.value, cUrl, cCode.value, "http");
+                } else if (comboBox.selectedIndex == 3) {
+                    await create(username.value, password.value, cUrl, cCode.value, "psocks", prxy);
+                } else if (comboBox.selectedIndex == 4) {
+                    await create(username.value, password.value, cUrl, cCode.value, "phttp", prxy);
+                }
+            } else {
+                alert('Please select the proxy type');
+            }
+        });
+
+        document.getElementById('changeIpButton').addEventListener('click', async function () {
+            await disableButton();
+            const selectedIndex = prxyCombobox.selectedIndex;
+
+            if (selectedIndex == 0) {
+                await chngPrxy("socks");
+                prxyCombobox.selectedIndex = 2;
+            } else if (selectedIndex == 1) {
+                await chngPrxy("http");
+            } else if (selectedIndex == 2) {
+                await chngPrxy("socks");
+            }
+        });
+
+        downloadButton.addEventListener('click', function () {
+            const text = createdIDsTextbox.value;
+            const blob = new Blob([text], {
+                type: 'text/plain'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'IDs.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        clearButton.addEventListener('click', function () {
+            createdIDsTextbox.value = "";
+            createdIDsLabel.textContent = `Created IDs: 0`;
+
+            const createdIDsTextboxContent = createdIDsTextbox.value;
+            localStorage.setItem('savedContent', createdIDsTextboxContent);
+
+            const createdIDsLabelContent = createdIDsLabel.textContent;
+            localStorage.setItem('savedContent2', createdIDsLabelContent);
+        });
+
+        cCodeInputBox.addEventListener("input", async function () {
+            console.log("inputting ", cCodeInputBox.value.length);
+            if (cCodeInputBox.value.length === 6) {
+                createButton.click();
+                refreshButton.click();
+                cCodeInputBox.value = "";
+                const statusLabel = document.getElementById("status");
+                statusLabel.innerHTML = "ID Status :";
+
+                await generateString(8);
+            }
+
+            if (cCodeInputBox.value.toLowerCase() === "r") {
+                const link = await loadCaptcha();
+                idm1CaptchaLink = link;
+                image.src = link;
+                cCodeInputBox.value = "";
+            }
+        });
+
+        rCodeInputBox.addEventListener("input", async function () {
+            if (rCodeInputBox.value.toLowerCase() === "r") {
+                const link = await loadCaptcha();
+                roomCaptcha.src = link;
+                idm1RoomCaptchaLink = link;
+                rCodeInputBox.value = "";
+            }
+
+            if (rCodeInputBox.value.length === 6) {
+                if (roomFloodCheckBox.checked) {
+                    await sendRoomCaptcha(idm1RoomCaptchaLink, rCodeInputBox.value, roomsInputBox.value, floodMsgInputBox.value, instanceId, "room");
+                    rCodeInputBox.value = "";
+                    cCodeInputBox.focus();
+                } else {
+                    const pvTargets = privateTargets.value.split('\n');
+                    await sendRoomCaptcha(idm1RoomCaptchaLink, rCodeInputBox.value, roomsInputBox.value, floodMsgInputBox.value, instanceId, "private", pvTargets);
+                    rCodeInputBox.value = "";
+                    cCodeInputBox.focus();
+                }
+            }
+        });
+
+        cCodeInputBox.addEventListener('focus', function () {
+            voiceResultInputBox = cCodeInputBox;
+        });
+
+        rCodeInputBox.addEventListener('focus', function () {
+            voiceResultInputBox = rCodeInputBox;
+        });
+
+        roomsInputBox.addEventListener("input", async function () {
+            const roomsInputBoxContent = roomsInputBox.value;
+            localStorage.setItem('savedContent3', roomsInputBoxContent);
+        });
+
+        floodMsgInputBox.addEventListener("input", async function () {
+            const floodMsgInputBoxContent = floodMsgInputBox.value;
+            localStorage.setItem('savedContent4', floodMsgInputBoxContent);
+        });
+
+        targetNames.addEventListener("input", async function () {
+            const floodMsgInputBoxContent = targetNames.value;
+            localStorage.setItem('targetNames', floodMsgInputBoxContent);
+        });
+
+        targetMidPart.addEventListener("input", async function () {
+            const floodMsgInputBoxContent = targetMidPart.value;
+            localStorage.setItem('targetMidPart', floodMsgInputBoxContent);
+        });
+
+        roomsInputBox.addEventListener("input", async function () {
+            const floodMsgInputBoxContent = roomsInputBox.value;
+            localStorage.setItem('roomsInputBox', floodMsgInputBoxContent);
+        });
+
+        privateTargets.addEventListener("input", async function () {
+            const floodMsgInputBoxContent = privateTargets.value;
+            localStorage.setItem('privateTargets', floodMsgInputBoxContent);
+        });
+
+        roomFloodCheckBox.addEventListener('change', function () {
+            if (roomFloodCheckBox.checked) {
+                privateFloodCheckBox.checked = false;
+            }
+        });
+
+        privateFloodCheckBox.addEventListener('change', function () {
+            if (privateFloodCheckBox.checked) {
+                roomFloodCheckBox.checked = false;
+            }
+        });
+
+        async function disableButton() {
+            const button = document.getElementById('changeIpButton');
+            button.disabled = true;
+
+            let remainingTime = 15;
+            button.textContent = `Wait ${remainingTime} seconds`;
+
+            const countdownInterval = setInterval(function () {
+                remainingTime--;
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    button.textContent = 'Change IP';
+                    button.disabled = false;
+                } else {
+                    button.textContent = `Wait ${remainingTime} seconds`;
+                }
+            }, 1000);
+        }
+    </script>
+
+</body>
+</html>
